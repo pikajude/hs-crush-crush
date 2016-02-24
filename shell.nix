@@ -4,7 +4,7 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, Cabal, nodejs, reflex-dom, stdenv, time
+  f = { mkDerivation, base, Cabal, lens, nodejs, reflex-dom, stdenv, time
       , transformers
       }:
       mkDerivation {
@@ -14,7 +14,7 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          base Cabal reflex-dom time transformers
+          base Cabal lens reflex-dom time transformers
         ];
         buildTools = [ nodejs ];
         description = "Date catgirls!";
