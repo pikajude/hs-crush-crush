@@ -1,27 +1,33 @@
-{-# LANGUAGE FlexibleContexts   #-}
-{-# LANGUAGE GADTs              #-}
-{-# LANGUAGE OverloadedLists    #-}
-{-# LANGUAGE RecursiveDo        #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TemplateHaskell    #-}
+{-# OPTIONS_GHC -ddump-splices #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE GADTs                     #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedLists           #-}
+{-# LANGUAGE QuasiQuotes               #-}
+{-# LANGUAGE RecursiveDo               #-}
+{-# LANGUAGE StandaloneDeriving        #-}
+{-# LANGUAGE TemplateHaskell           #-}
 
 import Control.Lens
 import Control.Monad
-import Control.Monad.Fix
 import Control.Monad.IO.Class
-import Data.Map               (Map, fromList, showTree, unionWith)
+import Data.Map               (Map, fromList, showTreeWith, unionWith)
 import Data.Monoid
 import Data.Time
-import Debug.Trace
+import Numeric
 import Reflex.Dom
 
 data Game = Game
           { _money      :: Double
           , _gifts      :: Map String (Sum Integer)
-          , _multiplier :: Integer
+          , _multiplier :: Double
           } deriving Show
 
-makeLenses ''Game
+makeLensesFor [ ("_money", "lMoney")
+              -- , ("_gifts", "lGifts")
+              , ("_multiplier", "lMultiplier")
+              ]
+              ''Game
 
 ticker :: MonadWidget t m => Double -> m (Event t Double)
 ticker fact = do
@@ -32,37 +38,47 @@ ticker fact = do
                   . uncurry (liftM2 (,)))
            $ attach be (fmap Just tck)
 
-gift :: MonadWidget t m => String -> Integer -> Dynamic t Game -> m (Event t (Double, Map String (Sum Integer)))
-gift nm price dg = do
-    myMoney <- mapDyn (view money) dg
+gift :: MonadWidget t m => String -> Integer -> Double -> Dynamic t Game -> m (Event t (Double, Map String (Sum Integer, Sum Double)))
+gift nm price mult dg = do
+    myMoney <- mapDyn (view lMoney) dg
     disabler <- mapDyn (\ c -> fromList [("disabled", "1") | c < fromIntegral price]) myMoney
     (buyer, _) <- elDynAttr' "button" disabler $ text $ "Buy " ++ nm ++ " ($" ++ show price ++ ")"
-    return $ fmap (const (negate (fromIntegral price), [(nm, Sum 1)])) (domEvent Click buyer)
+    return $ fmap (const (negate (fromIntegral price), [(nm, (Sum 1, Sum mult))])) (domEvent Click buyer)
 
-appDyn :: (MonadFix m, MonadHold t m, Reflex t) => Game -> [Event t (Game -> Game)] -> m (Dynamic t Game)
-appDyn g xs = foldDyn ($) g (mergeWith (.) xs)
-
-myGifts :: [(String, Integer)]
-myGifts = [ ("shell", 500)
-        , ("rose", 950)
-        , ("hand lotion", 1805)
-        , ("donut", 3430)
-        , ("fruit basket", 6516)
-        , ("chocolates", 12380)
-        , ("book", 23523)
-        , ("earrings", 44694)
+myGifts :: [(String, Integer, Double)]
+myGifts = [ ("shell", 500, 0.5)
+        , ("rose", 950, 2)
+        , ("hand lotion", 1805, 5)
+        , ("donut", 3430, 10)
+        , ("fruit basket", 6516, 20)
+        , ("chocolates", 12380, 40)
+        , ("book", 23523, 80)
+        , ("earrings", 44694, 160)
         ]
 
-main :: IO ()
-main = mainWidget $ el "div" $ do
+getTotalMultiplier :: Map String (Sum Integer, Sum Double) -> Double
+getTotalMultiplier m = 1 + getSum (foldMap snd m)
+
+homeView :: MonadWidget t m => m ()
+homeView = do
     rec monetaryBalance <- foldDyn (+) 0 $ mergeWith (+) [giftMoney, stateIncome]
-        stateIncome <- fmap (attachWith (\ g n -> n * fromIntegral (1 + length (view gifts g))) (current game)) (ticker 100)
+        stateIncome <- fmap (attachWith (\ g n -> n * view lMultiplier g) (current game)) (ticker 100)
         giftCollection <- foldDyn (unionWith mappend) mempty giftThings
-        game <- combineDyn (\m g -> Game m g 1) monetaryBalance giftCollection
         (giftMoney, giftThings) <- splitE . mergeWith (\(a,b) (c,d) -> (a + c, unionWith mappend b d))
-                               <$> mapM (\ (g,p) -> gift g p game) myGifts
+                               <$> mapM (\ (g,p,m) -> gift g p m game) myGifts
+        game <- [mkDyn|Game $monetaryBalance
+                            (fmap fst $giftCollection)
+                            (getTotalMultiplier $giftCollection)|]
     el "h3" $ do
         text "Money: "
-        dynText =<< mapDyn ((show :: Integer -> String) . floor . view money) game
+        dynText =<< mapDyn ((show :: Integer -> String) . floor . view lMoney) game
         el "br" $ text ""
-        el "pre" $ dynText =<< mapDyn (showTree . view gifts) game
+        el "pre" $ dynText =<< mapDyn showGame game
+
+main :: IO ()
+main = mainWidget $ tabDisplay "active" "active-li" [("home", ("Home", homeView)), ("away", ("Away", text "Hello, world!"))]
+
+showGame :: Game -> String
+showGame (Game m g x) = "Current money: $" ++ showFFloat (Just 2) m "" ++ "\n"
+                     ++ showTreeWith (\ k (Sum s) -> k ++ " => " ++ show s) False True g ++ "\n"
+                     ++ "Multiplier: " ++ show x ++ "x"

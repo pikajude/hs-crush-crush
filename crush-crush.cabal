@@ -16,6 +16,7 @@ executable crush-crush
                      , containers
                      , lens
                      , reflex-dom
+                     , reflex-dom-contrib
                      , time
                      , transformers
   hs-source-dirs:      src
