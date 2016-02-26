@@ -4,28 +4,20 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, base, Cabal, lens, nodejs, reflex-dom, reflex-dom-contrib, stdenv, time
-      , transformers
-      }:
-      mkDerivation {
-        pname = "crush-crush";
-        version = "0.1.0.0";
-        src = ./.;
-        isLibrary = false;
-        isExecutable = true;
-        executableHaskellDepends = [
-          base Cabal lens reflex-dom reflex-dom-contrib time transformers
-        ];
-        buildTools = [ nodejs ];
-        description = "Date catgirls!";
-        license = stdenv.lib.licenses.mit;
-      };
+  f = import ./default.nix;
 
   haskellPackages = if compiler == "default"
                        then pkgs.haskellPackages
                        else pkgs.haskell.packages.${compiler};
 
-  drv = haskellPackages.callPackage f {};
+  myNodePackages = pkgs.nodePackages.override {
+    self = myNodePackages;
+    generated = ./nix-extra/node-packages-generated.nix;
+  };
+
+  drv = pkgs.haskell.lib.overrideCabal (haskellPackages.callPackage f {}) (drv: {
+    buildTools = [ myNodePackages."socket.io" ];
+  });
 
 in
 
