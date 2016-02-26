@@ -1,5 +1,5 @@
 { mkDerivation, base, Cabal, containers, lens, reflex-dom
-, reflex-dom-contrib, stdenv, time, transformers
+, reflex-dom-contrib, scientific, stdenv, time, transformers
 }:
 mkDerivation {
   pname = "crush-crush";
@@ -8,8 +8,8 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    base Cabal containers lens reflex-dom reflex-dom-contrib time
-    transformers
+    base Cabal containers lens reflex-dom reflex-dom-contrib scientific
+    time transformers
   ];
   description = "Date catgirls!";
   license = stdenv.lib.licenses.mit;

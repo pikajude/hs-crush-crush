@@ -21,6 +21,7 @@ executable crush-crush
                      , lens
                      , reflex-dom
                      , reflex-dom-contrib
+                     , scientific
                      , time
                      , transformers
   hs-source-dirs:      src
