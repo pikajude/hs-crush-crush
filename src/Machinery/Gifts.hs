@@ -15,7 +15,7 @@ gift nm price mult dg = elAttr "div" [("data-gift", nm)] $ do
     (buyer, _) <- elDynAttr' "button" disabler $ text $ "Buy " ++ nm ++ " ($" ++ show price ++ ")"
 
     loadPct <- mapDyn (\ c -> [ ("class", "loader")
-                              , ("style", "background-color: green; color: white; width: "
+                              , ("style", "background-color: green; color: white; text-shadow: 1px 1px #000,-1px 1px #000,1px -1px #000,-1px -1px #000,1px 0 #000,0 1px #000,-1px 0 #000,0 -1px #000; width: "
                                        ++ show (min 100 (fst c * 100))
                                        ++ "%")
                               ]) =<< remaining (fromIntegral price) dg
@@ -32,5 +32,5 @@ myGifts = [ ("shell", 500, 0.5)
           , ("fruit basket", 6516, 20)
           , ("chocolates", 12380, 40)
           , ("book", 23523, 80)
-          , ("earrings", 44694, 160)
+          , ("earrings", 44694 * 100000, 160)
           ]

@@ -22,6 +22,7 @@ makeLensesFor [ ("_money", "lMoney")
               ''Game
 
 showGame :: Game -> String
+showGame (Game n _ _ _) | isInfinite n || isNaN n = "Uh-oh!!!"
 showGame (Game m _ g x)
     = "Current money: $" ++ showFFloat (Just 2) m "" ++ "\n"
    ++ showTreeWith (\ k (Sum s) -> k ++ " => " ++ show s) False True g ++ "\n"
