@@ -19,6 +19,7 @@ executable crush-crush
                      , Cabal
                      , containers
                      , lens
+                     , mtl
                      , reflex-dom
                      , reflex-dom-contrib
                      , scientific

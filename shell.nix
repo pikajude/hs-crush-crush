@@ -15,9 +15,7 @@ let
     generated = ./nix-extra/node-packages-generated.nix;
   };
 
-  drv = pkgs.haskell.lib.overrideCabal (haskellPackages.callPackage f {}) (drv: {
-    buildTools = [ myNodePackages."socket.io" ];
-  });
+  drv = haskellPackages.callPackage f {};
 
 in
 

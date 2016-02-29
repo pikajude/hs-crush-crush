@@ -15,11 +15,17 @@ getTotalMultiplier m = 1 + getSum (foldMap snd m)
 
 initGame :: MonadWidget t m => m (Dynamic t Game)
 initGame = do
+    let baseSalary = 20
     rec monetaryBalance <- foldDyn (+) 0 $ mergeWith (+) [giftMoney, stateIncome]
-        stateIncome <- fmap (attachWith (\ g n -> n * view lMultiplier g) (current game)) (ticker 100)
+        stateIncome <- fmap (attachWith (\ g n -> n * view lSalary g * view lMultiplier g) (current game)) (ticker 1)
+
+        (giftMoney, giftThings) <- elClass "div" "main" $ initGifts game
         giftCollection <- foldDyn (unionWith mappend) mempty giftThings
-        (giftMoney, giftThings) <- splitE . mergeWith (\ (a,b) (c,d) -> (a + c, unionWith mappend b d))
-                               <$> mapM (\ (g,p,m) -> gift g p m game) myGifts
-        game <- combineDyn (\ m g -> Game m (fst <$> g) (getTotalMultiplier g))
+
+        game <- combineDyn (\ m g -> let mult = getTotalMultiplier g
+                                      in Game m baseSalary (fst <$> g) mult)
                     monetaryBalance giftCollection
     return game
+    where
+        initGifts game = splitE . mergeWith (\ (a,b) (c,d) -> (a + c, unionWith mappend b d))
+                     <$> mapM (\ (g,p,m) -> gift g p m game) myGifts
