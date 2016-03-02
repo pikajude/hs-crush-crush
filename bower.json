@@ -1,0 +1,24 @@
+{
+  "name": "crush-crush",
+  "version": "0.0.0",
+  "authors": [
+    "Jude Taylor <me@jude.bio>"
+  ],
+  "description": "Dating catgirls",
+  "main": "exe/Main.hs",
+  "keywords": [
+    "dating"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/pikajude/crush-crush",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "foundation-sites": "*"
+  }
+}

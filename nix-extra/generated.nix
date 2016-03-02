@@ -175,6 +175,26 @@
     os = [ ];
     cpu = [ ];
   };
+  by-spec."bower"."*" =
+    self.by-version."bower"."1.7.7";
+  by-version."bower"."1.7.7" = self.buildNodePackage {
+    name = "bower-1.7.7";
+    version = "1.7.7";
+    bin = true;
+    src = fetchurl {
+      url = "http://registry.npmjs.org/bower/-/bower-1.7.7.tgz";
+      name = "bower-1.7.7.tgz";
+      sha1 = "2fd7ff3ebdcba5a8ffcd84c397c8fdfe9f825f92";
+    };
+    deps = {
+    };
+    optionalDependencies = {
+    };
+    peerDependencies = [];
+    os = [ ];
+    cpu = [ ];
+  };
+  "bower" = self.by-version."bower"."1.7.7";
   by-spec."callsite"."1.0.0" =
     self.by-version."callsite"."1.0.0";
   by-version."callsite"."1.0.0" = self.buildNodePackage {

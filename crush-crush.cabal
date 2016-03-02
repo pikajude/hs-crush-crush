@@ -16,13 +16,16 @@ Flag opt
 executable crush-crush
   main-is:             Main.hs
   build-depends:       base == 4.*
-                     , Cabal
+                     , bytestring
                      , containers
+                     , file-embed
                      , lens
                      , mtl
                      , reflex-dom
                      , reflex-dom-contrib
                      , scientific
+                     , stitch
+                     , text
                      , time
                      , transformers
   hs-source-dirs:      src
@@ -30,3 +33,5 @@ executable crush-crush
   ghc-options:         -Wall
   if flag(opt)
     ghc-options:       -O2
+  else
+    ghc-options:       -O0

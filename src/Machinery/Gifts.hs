@@ -9,28 +9,33 @@ import Machinery.Prediction
 import Models.Game
 import Reflex.Dom
 
+meterSuccess n | n >= 1 = ""
+               | n >= 0.85 = "success"
+               | n >= 0.5 = "warning"
+               | otherwise = "alert"
+
 gift :: MonadWidget t m => String -> Integer -> Double -> Dynamic t Game -> m (Event t (Double, Map String (Sum Integer, Sum Double)))
-gift nm price mult dg = elAttr "div" [("data-gift", nm)] $ do
-    disabler <- mapDyn (\ c -> fromList [("disabled", "1") | view lMoney c < fromIntegral price]) dg
+gift nm price mult dg = elAttr "div" [("data-gift", nm), ("class", "small-3 columns")] $ do
+    disabler <- mapDyn (\ c -> fromList $ [("disabled", "1") | view lMoney c < fromIntegral price] ++ [("class", "expanded button gift-buy")]) dg
     (buyer, _) <- elDynAttr' "button" disabler $ text $ "Buy " ++ nm ++ " ($" ++ show price ++ ")"
 
-    loadPct <- mapDyn (\ c -> [ ("class", "loader")
-                              , ("style", "background-color: green; color: white; text-shadow: 1px 1px #000,-1px 1px #000,1px -1px #000,-1px -1px #000,1px 0 #000,0 1px #000,-1px 0 #000,0 -1px #000; width: "
-                                       ++ show (min 100 (fst c * 100))
-                                       ++ "%")
-                              ]) =<< remaining (fromIntegral price) dg
-    elDynAttr "div" loadPct $ dynText =<< mapDyn (\ (a,b) -> if a == 1 then "ready!" else b)
-                                      =<< remaining (fromIntegral price) dg
+    rm <- remaining (fromIntegral price) dg
+    loadColor <- mapDyn (\ c -> [ ("class", "progress " ++ meterSuccess (fst c)) ]) rm
+    loadPct <- mapDyn (\ c -> [ ("class", "progress-meter")
+                              , ("style", "width: " ++ show (min 1 (fst c) * 100) ++ "%")
+                              ]) rm
+    elDynAttr "div" loadColor $
+        elDynAttr "div" loadPct $
+            elClass "p" "progress-meter-text" $
+                dynText =<< mapDyn (\ (a,b) -> if a == 1 then "ready!" else b)
+                        =<< remaining (fromIntegral price) dg
 
     return $ fmap (\ () -> (negate (fromIntegral price), [(nm, (Sum 1, Sum mult))])) (domEvent Click buyer)
 
 myGifts :: [(String, Integer, Double)]
-myGifts = [ ("shell", 500, 0.5)
-          , ("rose", 950, 2)
-          , ("hand lotion", 1805, 5)
-          , ("donut", 3430, 10)
-          , ("fruit basket", 6516, 20)
-          , ("chocolates", 12380, 40)
-          , ("book", 23523, 80)
-          , ("earrings", 44694 * 100000, 160)
-          ]
+myGifts = zip3 [ "shell", "rose", "hand lotion", "donut", "fruit basket", "chocolates"
+               , "book", "earrings", "drink", "flowers", "cake", "plushy toy", "tea set"
+               , "shoes", "cute puppy", "necklace", "designer bag", "new car"
+               ]
+               (map round $ iterate (* 1.9) 500)
+               (iterate (* 4) 0.5)

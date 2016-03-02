@@ -12,10 +12,11 @@ let
 
   myNodePackages = pkgs.nodePackages.override {
     self = myNodePackages;
-    generated = ./nix-extra/node-packages-generated.nix;
+    generated = ./nix-extra/generated.nix;
   };
 
-  drv = haskellPackages.callPackage f {};
+  drv = pkgs.haskell.lib.addBuildTools (haskellPackages.callPackage f {})
+    [ myNodePackages.bower ];
 
 in
 
