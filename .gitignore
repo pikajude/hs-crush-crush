@@ -3,3 +3,6 @@
 *.jsexe
 dist
 Setup
+bower_components
+result
+test.hs

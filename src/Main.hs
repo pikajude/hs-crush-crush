@@ -8,6 +8,7 @@ import Control.Lens       hiding ((.=))
 import Data.ByteString    (ByteString)
 import Data.FileEmbed
 import Data.Monoid
+import Data.Text          (Text, unpack)
 import Data.Text.Encoding
 import Machinery.Main
 import Models.Game
@@ -29,15 +30,23 @@ commas = reverse . commas' . reverse where
     commas' xs = xs
 
 main :: IO ()
-main = mainWidgetWithCss ($(embedFile "bower_components/foundation-sites/dist/foundation.min.css") <> mainCss) $ do
+main = mainWidgetWithHead mainHead $ do
     game <- initGame
     homeView game
 
-mainCss :: ByteString
-mainCss = encodeUtf8 $ renderCSS $
+mainHead = do
+    el "style" $ text . unpack $ foundationCss <> mainCss
+    elAttr "meta" [("charset", "UTF-8")] $ return ()
+
+foundationCss :: Text
+foundationCss = decodeUtf8 $(embedFile "bower_components/foundation-sites/dist/foundation.min.css")
+
+mainCss :: Text
+mainCss = renderCSS $
     "body" ? do
-        ".gift-buy" ?
+        ".gift-buy" ? do
             "margin-bottom" .= "0"
+            "font-family" .= "\"Apple Color Emoji\",\"Android Emoji\",\"Segoe UI Emoji\",\"EmojiSymbols\",\"Symbola\",\"Inconsolata\",\"Consolas\",\"Ubuntu Mono\",\"Menlo\",monospace;"
         ".progress-meter-text" ? do
             "transform" .= "translate(0, -8%)"
             "top" .= "0"

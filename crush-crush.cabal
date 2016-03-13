@@ -19,10 +19,10 @@ executable crush-crush
                      , bytestring
                      , containers
                      , file-embed
+                     , ghcjs-base
                      , lens
                      , mtl
                      , reflex-dom
-                     , reflex-dom-contrib
                      , scientific
                      , stitch
                      , text

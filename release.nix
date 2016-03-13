@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> {}, compiler ? "default", crush-crush ? { outPath = ./.; } }:
+{ pkgs ? import <nixpkgs> {}, compiler ? "ghcjs", crush-crush ? { outPath = ./.; } }:
 
 let
   haskellPackages = if compiler == "default"

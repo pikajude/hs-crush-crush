@@ -15,7 +15,7 @@ getTotalMultiplier m = 1 + getSum (foldMap snd m)
 
 initGame :: MonadWidget t m => m (Dynamic t Game)
 initGame = do
-    let baseSalary = 0.5
+    let baseSalary = 10
     rec monetaryBalance <- foldDyn (+) 0 $ mergeWith (+) [giftMoney, stateIncome]
         stateIncome <- fmap (attachWith (\ g n -> n * view lSalary g * view lMultiplier g) (current game)) (ticker 1)
 
