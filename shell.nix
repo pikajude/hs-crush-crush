@@ -16,7 +16,7 @@ let
   };
 
   drv = pkgs.haskell.lib.addBuildTools (haskellPackages.callPackage f {})
-    [ myNodePackages.bower haskellPackages.cabal-install ];
+    [ myNodePackages.bower haskellPackages.cabal-install haskellPackages.ghc-mod ];
 
 in
 

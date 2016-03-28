@@ -5,7 +5,6 @@
 {-# LANGUAGE TemplateHaskell   #-}
 
 import Control.Lens       hiding ((.=))
-import Data.ByteString    (ByteString)
 import Data.FileEmbed
 import Data.Monoid
 import Data.Text          (Text, unpack)
@@ -36,6 +35,7 @@ main = mainWidgetWithHead mainHead $ do
     game <- initGame
     homeView game
 
+mainHead :: MonadWidget t m => m ()
 mainHead = do
     el "style" $ text . unpack $ foundationCss <> mainCss
     elAttr "meta" [("charset", "UTF-8")] $ return ()
@@ -47,7 +47,7 @@ mainCss :: Text
 mainCss = renderCSS $
     "body" ? do
         "-webkit-user-select" .= "none"
-        ".gift-buy" ? do
+        ".gift-buy" ?
             "margin-bottom" .= "0"
             -- "font-family" .= "\"Apple Color Emoji\",\"Android Emoji\",\"Segoe UI Emoji\",\"EmojiSymbols\",\"Symbola\",\"Inconsolata\",\"Consolas\",\"Ubuntu Mono\",\"Menlo\",monospace;"
         ".progress-meter-text" ? do

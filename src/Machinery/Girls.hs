@@ -3,17 +3,17 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE OverloadedLists           #-}
 {-# LANGUAGE QuasiQuotes               #-}
-{-# LANGUAGE RecursiveDo               #-}
-{-# LANGUAGE TemplateHaskell           #-}
+{-# LANGUAGE RankNTypes                #-}
 
 module Machinery.Girls where
 
 import Control.Lens  ((??))
 import Control.Monad
-import Data.Functor
 import Data.Map      (Map, fromList)
 import Data.Monoid
 import Reflex.Dom
+
+type Screen = forall t m. MonadWidget t m => El t -> Dynamic t Integer -> Workflow t m ()
 
 girl :: MonadWidget t m => String -> Dynamic t Integer -> m ()
 girl name bankBalance = elClass "div" "row" $ do
@@ -21,6 +21,7 @@ girl name bankBalance = elClass "div" "row" $ do
     (clicker, _) <- el "h3" $ el' "a" $ text name
     void $ workflow $ screen0 clicker bankBalance
 
+screen0 :: Screen
 screen0 clicker bankBalance = Workflow $ el "div" $ do
     affectionSink <- foldDyn ((min 10 .) . (+)) (0 :: Integer) (1 <$ domEvent Click clicker)
     nexter <- requirements
@@ -29,6 +30,7 @@ screen0 clicker bankBalance = Workflow $ el "div" $ do
         ]
     return ((), screen1 clicker bankBalance <$ domEvent Click nexter)
 
+screen1 :: Screen
 screen1 clicker bankBalance = Workflow $ el "div" $ do
     affectionSink <- foldDyn ((min 100 .) . (+)) (0 :: Integer) (1 <$ domEvent Click clicker)
     nexter <- requirements
@@ -51,11 +53,11 @@ requirement :: (MonadWidget t m, Show a, Ord a, Num a) => String -> Dynamic t a 
 requirement reqName currentValue objective = do
     el "dl" $ do
         el "dt" $ text reqName
-        el "dd" $ if (objective == 1)
+        el "dd" $ if objective == 1
             then dynText =<< mapDyn (\ x -> if x >= 1 then "Success!" else "No " ++ reqName ++ " yet...") currentValue
             else do
                 elClass "span" "value" $ dynText =<< mapDyn (show . min objective) currentValue
-                text $ "  ∕"
+                text "  ∕"
                 elClass "span" "value" $ text $ show objective
                 text " "
                 (elDynAttr "span" ?? text "✓")
