@@ -1,19 +1,23 @@
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedLists           #-}
 {-# LANGUAGE QuasiQuotes               #-}
 {-# LANGUAGE RecursiveDo               #-}
 {-# LANGUAGE TemplateHaskell           #-}
 
 module Machinery.Girls where
 
-import Control.Lens ((??))
+import Control.Lens  ((??))
+import Control.Monad
 import Data.Functor
-import Data.Map     (Map, fromList)
+import Data.Map      (Map, fromList)
+import Data.Monoid
 import Reflex.Dom
 
 girl :: MonadWidget t m => String -> Dynamic t Integer -> m ()
-girl name bankBalance = do
+girl name bankBalance = elClass "div" "row" $ do
+    el "hr" $ return ()
     (clicker, _) <- el "h3" $ el' "a" $ text name
     void $ workflow $ screen0 clicker bankBalance
 
@@ -37,16 +41,26 @@ screen1 clicker bankBalance = Workflow $ el "div" $ do
 requirements :: MonadWidget t m => [m (Dynamic t Bool)] -> m (El t)
 requirements reqs = do
     rs <- mconcatDyn =<< mapM (mapDyn (:[])) =<< sequence reqs
-    (nexter, _) <- (elDynAttr' "button" ?? text "Next") =<< displayNone not =<< [mkDyn|and $rs|]
+    (nexter, _) <- (elDynAttr' "button" ?? text "Next")
+        =<< mapDyn (<> [("type", "button"), ("class", "success button")])
+        =<< displayNone not
+        =<< [mkDyn|and $rs|]
     return nexter
 
-requirement :: (MonadWidget t m, Show a, Ord a) => String -> Dynamic t a -> a -> m (Dynamic t Bool)
+requirement :: (MonadWidget t m, Show a, Ord a, Num a) => String -> Dynamic t a -> a -> m (Dynamic t Bool)
 requirement reqName currentValue objective = do
-    el "p" $ do
-        text (reqName ++ ": ")
-        dynText =<< mapDyn (show . min objective) currentValue
-        text $ "/" ++ show objective
-        (elDynAttr "span" ?? text " ✓") =<< displayNone (< objective) currentValue
+    el "dl" $ do
+        el "dt" $ text reqName
+        el "dd" $ if (objective == 1)
+            then dynText =<< mapDyn (\ x -> if x >= 1 then "Success!" else "No " ++ reqName ++ " yet...") currentValue
+            else do
+                elClass "span" "value" $ dynText =<< mapDyn (show . min objective) currentValue
+                text $ "  ∕"
+                elClass "span" "value" $ text $ show objective
+                text " "
+                (elDynAttr "span" ?? text "✓")
+                    =<< mapDyn (<> [("class", "success badge")])
+                    =<< displayNone (< objective) currentValue
     mapDyn (>= objective) currentValue
 
 displayNone :: MonadWidget t m => (a -> Bool) -> Dynamic t a -> m (Dynamic t (Map String String))
