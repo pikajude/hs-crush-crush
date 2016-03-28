@@ -3,7 +3,6 @@
 module Machinery.Gifts where
 
 import Control.Lens
-import Data.JSString        (JSString, unpack)
 import Data.Map             (Map, fromList)
 import Data.Monoid
 import Machinery.Prediction
@@ -35,8 +34,6 @@ gift nm price mult dg = elAttr "div" [("data-gift", nm), ("class", "small-3 colu
     return $ fmap (\ () -> (negate (fromIntegral price), [(nm, (Sum 1, Sum mult))])) (domEvent Click buyer)
 
 myGifts :: [(String, Integer, Double)]
-myGifts = zip3 [ unpack shellEmoji, "🌹", "👏", "🍩", "🍇🍓", "🍫", "📚", "💄", "🍹 ", "💐", "🍰", "🐻", "🍵", "👠", "🐶", "\128255", "👜", "🚗" ]
+myGifts = zip3 [ "🐚", "🌹", "👏", "🍩", "🍇🍓", "🍫", "📚", "💄", "🍹 ", "💐", "🍰", "🐻", "🍵", "👠", "🐶", "\128255", "👜", "🚗" ]
                (map round $ iterate (* 1.9) (500 :: Double))
-               (iterate (* 1.8) 0.5)
-
-foreign import javascript safe "'🐚'" shellEmoji :: JSString
+               (iterate (* 2) 0.5)

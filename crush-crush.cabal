@@ -19,7 +19,6 @@ executable crush-crush
                      , bytestring
                      , containers
                      , file-embed
-                     , ghcjs-base
                      , lens
                      , mtl
                      , reflex-dom
@@ -28,9 +27,14 @@ executable crush-crush
                      , text
                      , time
                      , transformers
+
+  if impl(ghcjs)
+    build-depends:     ghcjs-base
+
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall
+
   if flag(opt)
     ghc-options:       -O2
   else

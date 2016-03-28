@@ -10,6 +10,7 @@ import Data.FileEmbed
 import Data.Monoid
 import Data.Text          (Text, unpack)
 import Data.Text.Encoding
+import Machinery.Girls
 import Machinery.Main
 import Models.Game
 import Reflex.Dom
@@ -17,6 +18,7 @@ import Stitch
 
 homeView :: MonadWidget t m => Dynamic t Game -> m ()
 homeView game = do
+    girl "Cassie" =<< mapDyn (floor . view lMoney) game
     el "h3" $ do
         text "Money: $"
         dynText =<< mapDyn (commas . (show :: Integer -> String) . floor . view lMoney) game
@@ -44,9 +46,10 @@ foundationCss = decodeUtf8 $(embedFile "bower_components/foundation-sites/dist/f
 mainCss :: Text
 mainCss = renderCSS $
     "body" ? do
+        "-webkit-user-select" .= "none"
         ".gift-buy" ? do
             "margin-bottom" .= "0"
-            "font-family" .= "\"Apple Color Emoji\",\"Android Emoji\",\"Segoe UI Emoji\",\"EmojiSymbols\",\"Symbola\",\"Inconsolata\",\"Consolas\",\"Ubuntu Mono\",\"Menlo\",monospace;"
+            -- "font-family" .= "\"Apple Color Emoji\",\"Android Emoji\",\"Segoe UI Emoji\",\"EmojiSymbols\",\"Symbola\",\"Inconsolata\",\"Consolas\",\"Ubuntu Mono\",\"Menlo\",monospace;"
         ".progress-meter-text" ? do
             "transform" .= "translate(0, -8%)"
             "top" .= "0"

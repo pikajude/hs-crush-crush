@@ -28,4 +28,4 @@ initGame = do
     return game
     where
         initGifts game = splitE . mergeWith (\ (a,b) (c,d) -> (a + c, unionWith mappend b d))
-                     <$> mapM (\ (g,p,m) -> gift g p m game) myGifts
+                     <$> mapM (\ (g,p,m) -> gift g p m game) []
